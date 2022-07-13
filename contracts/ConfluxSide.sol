@@ -10,11 +10,15 @@ import "./utils/ReentrancyGuard.sol";
 import "./MappedTokenDeployer.sol";
 import "./UpgradeableERC20.sol";
 
+// Deployed on Core
 contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
     using SafeERC20 for IERC20;
-
+    // used for cross chain calls
     ICrossSpaceCall public crossSpaceCall;
 
+    // source token mapping is evm space address => core space address
+
+    // address of contract on e space
     address public override evmSide;
 
     bool public initialized;
@@ -26,10 +30,12 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         evmSide = _evmSide;
         beacon = _beacon;
 
+        // init internal function
         crossSpaceCall = ICrossSpaceCall(
             0x0888000000000000000000000000000000000006
         );
 
+        // set e space cntract to store this contract address
         crossSpaceCall.callEVM(
             bytes20(evmSide),
             abi.encodeWithSelector(IEvmSide.setCfxSide.selector)
@@ -38,13 +44,14 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         _transferOwnership(msg.sender);
     }
 
-    // register token metadata to evm space
+    // register CRC20 token metadata to evm space
     function registerMetadata(IERC20 _token) public override {
+        // make sure token is not ERC 20 but CRC20
         require(
             sourceTokens[address(_token)] == address(0),
             "ConfluxSide: token is mapped from evm space"
         );
-
+        // call the evm contract to register crc20 metadata
         crossSpaceCall.callEVM(
             bytes20(evmSide),
             abi.encodeWithSelector(
@@ -63,14 +70,17 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         address _evmAccount,
         uint256 _amount
     ) public override nonReentrant {
+        // make sure token is not ERC 20 but CRC20
         require(
             sourceTokens[address(_token)] == address(0),
             "ConfluxSide: token is mapped from evm space"
         );
         require(_amount > 0, "ConfluxSide: invalid amount");
-
+        
+        // lock tokens in ConlufxSide contract
         _token.safeTransferFrom(msg.sender, address(this), _amount);
 
+        //  call the evm contract to mint the tokens
         crossSpaceCall.callEVM(
             bytes20(evmSide),
             abi.encodeWithSelector(
@@ -84,7 +94,7 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         emit CrossToEvm(address(_token), msg.sender, _evmAccount, _amount);
     }
 
-    // withdraw CRC20 from EVM space
+    // withdraw CRC20 locked as ERC20 on EVM space 
     function withdrawFromEvm(
         IERC20 _token,
         address _evmAccount,
@@ -96,6 +106,7 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         );
         require(_amount > 0, "ConfluxSide: invalid amount");
 
+        // call evm contract to burn the tokens from the sender on e space
         crossSpaceCall.callEVM(
             bytes20(evmSide),
             abi.encodeWithSelector(
@@ -107,11 +118,13 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
             )
         );
 
+        // transfer the tokens to the sender after burn is successful
         _token.safeTransfer(msg.sender, _amount);
 
         emit WithdrawFromEvm(address(_token), msg.sender, _evmAccount, _amount);
     }
 
+    // add CRC 20 token -> EVM space mapping
     function createMappedToken(address _evmToken) public nonReentrant {
         require(
             mappedTokens[_evmToken] == address(0),
@@ -150,7 +163,7 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         _deploy(_evmToken, name, symbol, decimals);
     }
 
-    // cross ERC20 from EVM space
+    // cross ERC20 from EVM space to CRC20 on Core space
     function crossFromEvm(
         address _evmToken,
         address _evmAccount,
@@ -178,7 +191,7 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
         emit CrossFromEvm(_evmToken, msg.sender, _evmAccount, _amount);
     }
 
-    // withdraw ERC20 to EVM space
+    // withdraw ERC20 to EVM space from CRC 20 on Core space
     function withdrawToEvm(
         address _evmToken,
         address _evmAccount,

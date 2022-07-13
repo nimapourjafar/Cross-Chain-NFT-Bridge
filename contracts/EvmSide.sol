@@ -55,7 +55,8 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
             IERC20(_token).decimals()
         );
     }
-
+    
+    // register token from core metadata to e space
     function registerCRC20(
         address _crc20,
         string memory _name,
@@ -86,10 +87,12 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
         uint256 _amount
     ) public override nonReentrant {
         require(msg.sender == cfxSide, "EvmSide: sender is not cfx side");
+        // make sure token exists on e space
         require(
             mappedTokens[_token] != address(0),
             "EvmSide: token is not mapped"
         );
+        // mint token on espace
         UpgradeableERC20(mappedTokens[_token]).mint(_to, _amount);
     }
 
@@ -106,10 +109,13 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
             "EvmSide: token is not mapped"
         );
         address mappedToken = mappedTokens[_token];
+        // check if the ERC 20 tokens locked on EVM side are enough to burn for core space
         uint256 lockedAmount =
             lockedMappedToken[mappedToken][_evmAccount][_cfxAccount];
         require(lockedAmount >= _amount, "EvmSide: insufficent lock");
+        // burn token on espace
         UpgradeableERC20(mappedToken).burn(_amount);
+        // update locked balance
         lockedAmount -= _amount;
         lockedMappedToken[mappedToken][_evmAccount][_cfxAccount] = lockedAmount;
 
@@ -131,13 +137,14 @@ contract EvmSide is IEvmSide, MappedTokenDeployer, ReentrancyGuard {
             sourceTokens[_mappedToken] != address(0),
             "EvmSide: not mapped token"
         );
-
+        // checks how much is currently locked
         uint256 oldAmount =
             lockedMappedToken[_mappedToken][msg.sender][_cfxAccount];
+        // refunds the old amount if there is any
         if (oldAmount > 0) {
             UpgradeableERC20(_mappedToken).transfer(msg.sender, oldAmount);
         }
-
+        // locks the new amount
         if (_amount > 0) {
             UpgradeableERC20(_mappedToken).transferFrom(
                 msg.sender,

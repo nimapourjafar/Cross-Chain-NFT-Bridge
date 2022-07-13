@@ -7,9 +7,9 @@ import "./roles/Ownable.sol";
 import "./interfaces/IMappedTokenDeployer.sol";
 
 contract MappedTokenDeployer is IMappedTokenDeployer, Ownable {
-    // source token => mapped token
+    // core space token => e space token
     mapping(address => address) public override mappedTokens;
-    // mapped token => source token
+    // e space token => core space token
     mapping(address => address) public override sourceTokens;
     address[] public override mappedTokenList;
     address public override beacon;
