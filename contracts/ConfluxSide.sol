@@ -16,8 +16,6 @@ contract ConfluxSide is IConfluxSide, MappedTokenDeployer, ReentrancyGuard {
     // used for cross chain calls
     ICrossSpaceCall public crossSpaceCall;
 
-    // source token mapping is evm space address => core space address
-
     // address of contract on e space
     address public override evmSide;
 
