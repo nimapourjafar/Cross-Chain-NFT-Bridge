@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 abstract contract IConfluxSideNFT {
     event CrossToEvm(
         address indexed token,
@@ -34,7 +33,7 @@ abstract contract IConfluxSideNFT {
 
     function evmSide() external view virtual returns (address);
 
-    function registerMetadata(IERC721 _token) public virtual;
+    function registerMetadata(IERC721Metadata _token) public virtual;
 
     function crossToEvm(
         IERC721 _token,

@@ -2,6 +2,7 @@
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./MappedNFTDeployer.sol";
 import "./UpgradeableERC721.sol";
@@ -41,7 +42,7 @@ contract ConfluxSideERC721 is
         _transferOwnership(msg.sender);
     }
 
-    function registerMetadata(IERC721 _token) public override {
+    function registerMetadata(IERC721Metadata _token) public override {
         require(
             sourceTokens[address(_token)] == address(0),
             "ConfluxSide: token is mapped from evm space"
@@ -68,7 +69,7 @@ contract ConfluxSideERC721 is
             "ConfluxSide: token is mapped from evm space"
         );
         require(
-            _token.ownerOf(_tokenId),
+            _token.ownerOf(_tokenId) == msg.sender,
             "ConfluxSide: must be owner of token"
         );
 
@@ -104,7 +105,7 @@ contract ConfluxSideERC721 is
         crossSpaceCall.callEVM(
             bytes20(evmSide),
             abi.encodeWithSelector(
-                IEvmSide.burn.selector,
+                IEvmSideNFT.burn.selector,
                 address(_token),
                 _evmAccount,
                 msg.sender,
@@ -205,7 +206,7 @@ contract ConfluxSideERC721 is
             address(this),
             _tokenId
         );
-        UpgradeableERC721(mappedTokens[_evmToken])._burn(_amount);
+        UpgradeableERC721(mappedTokens[_evmToken]).burn(_tokenId);
 
         crossSpaceCall.callEVM(
             bytes20(evmSide),

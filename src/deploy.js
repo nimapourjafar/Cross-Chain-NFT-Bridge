@@ -1072,7 +1072,7 @@ async function ownership() {
   ++evmNonce;
 
   res = (await EvmSide.instance.methods.getTokens(0).call()).result;
-  let DEFAULT_ADMIN_ROLE =
+  DEFAULT_ADMIN_ROLE =
     '0x0000000000000000000000000000000000000000000000000000000000000000';
   for (let i = 0; i < res.length; ++i) {
     let mapped_address = await EvmSide.instance.methods
