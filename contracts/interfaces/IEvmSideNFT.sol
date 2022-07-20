@@ -14,14 +14,14 @@ abstract contract IEvmSideNFT {
         address indexed mappedToken,
         address indexed evmAccount,
         address indexed cfxAccount,
-        uint256 tokenId
+        uint256[] tokenIds
     );
 
     event LockedToken(
         address indexed token,
         address indexed evmAccount,
         address indexed cfxAccount,
-        uint256 tokenId
+        uint256[] tokenIds
     );
 
     function cfxSide() external view virtual returns (address);
@@ -37,17 +37,17 @@ abstract contract IEvmSideNFT {
             string memory
         );
 
-    function lockedMappedToken(
+     function lockedMappedToken(
         address _token,
         address _evmAccount,
         address _cfxAccount
-    ) external view virtual returns (uint256);
+    ) external view virtual returns (uint256[] memory);
 
     function lockedToken(
         address _token,
         address _evmAccount,
         address _cfxAccount
-    ) external view virtual returns (uint256);
+    ) public view virtual returns (uint256[] memory);
 
     function registerCRC721(
         address _crc721,
@@ -60,38 +60,38 @@ abstract contract IEvmSideNFT {
     function mint(
         address _token,
         address _to,
-        uint256 _tokenId
+        uint256[] memory _tokenIds
     ) public virtual;
 
     function burn(
         address _token,
         address _evmAccount,
         address _cfxAccount,
-        uint256 _tokenId
+        uint256[] memory _tokenIds
     ) public virtual;
 
     function lockMappedToken(
         address _mappedToken,
         address _cfxAccount,
-        uint256 _tokenId
+        uint256[] memory _tokenIds
     ) public virtual;
 
     function lockToken(
         IERC721 _token,
         address _cfxAccount,
-        uint256 _tokenId
+        uint256[] memory _tokenIds
     ) public virtual;
 
     function crossToCfx(
         address _token,
         address _evmAccount,
         address _cfxAccount,
-        uint256 _tokenId
+        uint256[] memory _tokenIds
     ) public virtual;
 
     function withdrawFromCfx(
         address _token,
         address _evmAccount,
-        uint256 _tokenId
+        uint256[] memory _tokenIds
     ) public virtual;
 }

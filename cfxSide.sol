@@ -3130,14 +3130,14 @@ abstract contract IEvmSideNFT {
         address indexed mappedToken,
         address indexed evmAccount,
         address indexed cfxAccount,
-        uint256 tokenId
+        uint256[] tokenIds
     );
 
     event LockedToken(
         address indexed token,
         address indexed evmAccount,
         address indexed cfxAccount,
-        uint256 tokenId
+        uint256[] tokenIds
     );
 
     function cfxSide() external view virtual returns (address);
@@ -3153,17 +3153,17 @@ abstract contract IEvmSideNFT {
             string memory
         );
 
-    function lockedMappedToken(
+     function lockedMappedToken(
         address _token,
         address _evmAccount,
         address _cfxAccount
-    ) external view virtual returns (uint256);
+    ) external view virtual returns (uint256[] memory);
 
     function lockedToken(
         address _token,
         address _evmAccount,
         address _cfxAccount
-    ) external view virtual returns (uint256);
+    ) public view virtual returns (uint256[] memory);
 
     function registerCRC721(
         address _crc721,
@@ -3176,39 +3176,39 @@ abstract contract IEvmSideNFT {
     function mint(
         address _token,
         address _to,
-        uint256 _tokenId
+        uint256[] memory _tokenIds
     ) public virtual;
 
     function burn(
         address _token,
         address _evmAccount,
         address _cfxAccount,
-        uint256 _tokenId
+        uint256[] memory _tokenIds
     ) public virtual;
 
     function lockMappedToken(
         address _mappedToken,
         address _cfxAccount,
-        uint256 _tokenId
+        uint256[] memory _tokenIds
     ) public virtual;
 
     function lockToken(
         IERC721 _token,
         address _cfxAccount,
-        uint256 _tokenId
+        uint256[] memory _tokenIds
     ) public virtual;
 
     function crossToCfx(
         address _token,
         address _evmAccount,
         address _cfxAccount,
-        uint256 _tokenId
+        uint256[] memory _tokenIds
     ) public virtual;
 
     function withdrawFromCfx(
         address _token,
         address _evmAccount,
-        uint256 _tokenId
+        uint256[] memory _tokenIds
     ) public virtual;
 }
 
@@ -3276,28 +3276,28 @@ abstract contract IConfluxSideNFT {
         address indexed token,
         address indexed cfxAccount,
         address indexed evmAccount,
-        uint256 tokenId
+        uint256[] tokenIds
     );
 
     event CrossFromEvm(
         address indexed token,
         address indexed cfxAccount,
         address indexed evmAccount,
-        uint256 tokenId
+        uint256[] tokenIds
     );
 
     event WithdrawFromEvm(
         address indexed token,
         address indexed cfxAccount,
         address indexed evmAccount,
-        uint256 tokenId
+        uint256[] tokenIds
     );
 
     event WithdrawToEvm(
         address indexed token,
         address indexed cfxAccount,
         address indexed evmAccount,
-        uint256 tokenId
+        uint256[] tokenIds
     );
 
     function evmSide() external view virtual returns (address);
@@ -3307,25 +3307,25 @@ abstract contract IConfluxSideNFT {
     function crossToEvm(
         IERC721 _token,
         address _evmAccount,
-        uint256 _tokenId
+        uint256[] calldata _tokenIds
     ) public virtual;
 
     function withdrawFromEvm(
         IERC721 _token,
         address _evmAccount,
-        uint256 _tokenId
+        uint256[] calldata _tokenIds
     ) public virtual;
 
     function crossFromEvm(
         address _evmToken,
         address _evmAccount,
-        uint256 _tokenId
+        uint256[] calldata _tokenIds
     ) public virtual;
 
     function withdrawToEvm(
         address _evmToken,
         address _evmAccount,
-        uint256 _tokenId
+        uint256[] calldata _tokenIds
     ) public virtual;
 }
 
@@ -3393,20 +3393,17 @@ contract ConfluxSideERC721 is
     function crossToEvm(
         IERC721 _token,
         address _evmAccount,
-        uint256 _tokenId
+        uint256[] calldata _tokenIds
     ) public override nonReentrant {
-        // make sure token is not ERC 20 but CRC20
         require(
             sourceTokens[address(_token)] == address(0),
             "ConfluxSide: token is mapped from evm space"
         );
-        require(
-            _token.ownerOf(_tokenId) == msg.sender,
-            "ConfluxSide: must be owner of token"
-        );
 
         // lock tokens in ConlufxSide contract
-        _token.safeTransferFrom(msg.sender, address(this), _tokenId);
+        for (uint256 i = 0; i < _tokenIds.length; i++) {
+            _token.safeTransferFrom(msg.sender, address(this), _tokenIds[i]);
+        }
 
         //  call the evm contract to mint the tokens
         crossSpaceCall.callEVM(
@@ -3415,18 +3412,18 @@ contract ConfluxSideERC721 is
                 IEvmSideNFT.mint.selector,
                 address(_token),
                 _evmAccount,
-                _tokenId
+                _tokenIds
             )
         );
 
-        emit CrossToEvm(address(_token), msg.sender, _evmAccount, _tokenId);
+        emit CrossToEvm(address(_token), msg.sender, _evmAccount, _tokenIds);
     }
 
     // withdraw CRC20 locked as ERC20 on EVM space
     function withdrawFromEvm(
         IERC721 _token,
         address _evmAccount,
-        uint256 _tokenId
+        uint256[] calldata _tokenIds
     ) public override nonReentrant {
         require(
             sourceTokens[address(_token)] == address(0),
@@ -3441,18 +3438,20 @@ contract ConfluxSideERC721 is
                 address(_token),
                 _evmAccount,
                 msg.sender,
-                _tokenId
+                _tokenIds
             )
         );
 
         // transfer the tokens to the sender after burn is successful
-        _token.safeTransferFrom(address(this), msg.sender, _tokenId);
+        for (uint256 i = 0; i < _tokenIds.length; i++) {
+            _token.safeTransferFrom(address(this), msg.sender, _tokenIds[i]);
+        }
 
         emit WithdrawFromEvm(
             address(_token),
             msg.sender,
             _evmAccount,
-            _tokenId
+            _tokenIds
         );
     }
 
@@ -3497,7 +3496,7 @@ contract ConfluxSideERC721 is
     function crossFromEvm(
         address _evmToken,
         address _evmAccount,
-        uint256 _tokenId
+        uint256[] calldata _tokenIds
     ) public override nonReentrant {
         if (mappedTokens[_evmToken] == address(0)) {
             _createMappedToken(_evmToken);
@@ -3510,35 +3509,39 @@ contract ConfluxSideERC721 is
                 _evmToken,
                 _evmAccount,
                 msg.sender,
-                _tokenId
+                _tokenIds
             )
         );
 
-        UpgradeableERC721(mappedTokens[_evmToken]).safeMint(
-            msg.sender,
-            _tokenId
-        );
+        for (uint256 i = 0; i < _tokenIds.length; i++) {
+            UpgradeableERC721(mappedTokens[_evmToken]).safeMint(
+                msg.sender,
+                _tokenIds[i]
+            );
+        }
 
-        emit CrossFromEvm(_evmToken, msg.sender, _evmAccount, _tokenId);
+        emit CrossFromEvm(_evmToken, msg.sender, _evmAccount, _tokenIds);
     }
 
     // withdraw ERC20 to EVM space from CRC 20 on Core space
     function withdrawToEvm(
         address _evmToken,
         address _evmAccount,
-        uint256 _tokenId
+        uint256[] calldata _tokenIds
     ) public override nonReentrant {
         require(
             mappedTokens[_evmToken] != address(0),
             "ConfluxSide: not mapped token"
         );
 
-        UpgradeableERC721(mappedTokens[_evmToken]).transferFrom(
-            msg.sender,
-            address(this),
-            _tokenId
-        );
-        UpgradeableERC721(mappedTokens[_evmToken]).burn(_tokenId);
+        for (uint256 i = 0; i < _tokenIds.length; i++) {
+            UpgradeableERC721(mappedTokens[_evmToken]).transferFrom(
+                msg.sender,
+                address(this),
+                _tokenIds[i]
+            );
+            UpgradeableERC721(mappedTokens[_evmToken]).burn(_tokenIds[i]);
+        }
 
         crossSpaceCall.callEVM(
             bytes20(evmSide),
@@ -3546,11 +3549,11 @@ contract ConfluxSideERC721 is
                 IEvmSideNFT.withdrawFromCfx.selector,
                 _evmToken,
                 _evmAccount,
-                _tokenId
+                _tokenIds
             )
         );
 
-        emit WithdrawToEvm(_evmToken, msg.sender, _evmAccount, _tokenId);
+        emit WithdrawToEvm(_evmToken, msg.sender, _evmAccount, _tokenIds);
     }
 
     /// @notice Accept ERC721 tokens
