@@ -220,4 +220,15 @@ contract ConfluxSideERC721 is
 
         emit WithdrawToEvm(_evmToken, msg.sender, _evmAccount, _tokenId);
     }
+
+    /// @notice Accept ERC721 tokens
+    function onERC721Received(
+        address _operator,
+        address _from,
+        uint256 _tokenId,
+        bytes calldata _data
+    ) external returns (bytes4) {
+        // IERC721.onERC721Received.selector
+        return 0x150b7a02;
+    }
 }

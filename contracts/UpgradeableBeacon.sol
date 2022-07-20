@@ -3,9 +3,9 @@
 
 pragma solidity ^0.8.2;
 
-import "./IBeacon.sol";
-import "../roles/Ownable.sol";
-import "../libraries/Address.sol";
+import "./proxy/IBeacon.sol";
+import "./roles/Ownable.sol";
+import "./libraries/Address.sol";
 
 /**
  * @dev This contract is used in conjunction with one or more instances of {BeaconProxy} to determine their

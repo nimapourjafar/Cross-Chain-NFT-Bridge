@@ -189,4 +189,15 @@ contract EvmSide is IEvmSideNFT, MappedNFTDeployer, ReentrancyGuard {
         require(msg.sender == cfxSide, "EvmSide: sender is not cfx side");
         IERC721(_token).safeTransferFrom(address(this), _evmAccount, _tokenId);
     }
+
+    /// @notice Accept ERC721 tokens
+    function onERC721Received(
+        address _operator,
+        address _from,
+        uint256 _tokenId,
+        bytes calldata _data
+    ) external returns (bytes4) {
+        // IERC721.onERC721Received.selector
+        return 0x150b7a02;
+    }
 }
