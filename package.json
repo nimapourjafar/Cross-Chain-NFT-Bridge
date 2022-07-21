@@ -22,7 +22,8 @@
     "js-conflux-sdk": "1.5.11",
     "jslint": "^0.12.1",
     "prettier": "2.2.1",
-    "prettier-plugin-solidity": "1.0.0-beta.3"
+    "prettier-plugin-solidity": "1.0.0-beta.3",
+    "react-alert": "^7.0.3"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",
