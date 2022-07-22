@@ -24,10 +24,12 @@ const Home: NextPage = () => {
       </nav>
 
       <main className="min-h-screen flex flex-col items-center justify-center">
-        <h1 className="text-3xl">Transfer NFTs</h1>
+        <div className="absolute top-20 space-y-2">
+          <h1 className="text-3xl">Transfer NFTs</h1>
 
-        <p className="text-lg">Between Core and eSpace</p>
-        <MainCard />
+          <p className="text-lg">Between Core and eSpace</p>
+          <MainCard />
+        </div>
       </main>
 
       <footer className={styles.footer}>
