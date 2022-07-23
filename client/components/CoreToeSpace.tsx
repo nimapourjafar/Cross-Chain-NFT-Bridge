@@ -1,5 +1,10 @@
-import { useAccount } from "@cfxjs/use-wallet-react/ethereum";
+import { useAccount as useEvmAccount } from "@cfxjs/use-wallet-react/ethereum";
 import React, { useState } from "react";
+import { Conflux } from "js-conflux-sdk";
+import { addresses } from "../addresses";
+import { abi } from "../../artifacts/contracts/ConfluxSideERC721.sol/ConfluxSideERC721.json";
+import { abi as ERC721Abi } from "../../artifacts/contracts/UpgradeableERC721.sol/UpgradeableERC721.json";
+import { useAccount as useCfxAccount } from "@cfxjs/use-wallet-react/conflux/Fluent";
 
 export default function CoreToeSpace({
   setFlipped,
@@ -9,17 +14,49 @@ export default function CoreToeSpace({
   const [eSpaceAddress, setESpaceAddress] = useState("");
   const [nftContractAddress, setNftContractAddress] = useState("");
   const [tokenIds, setTokenIds] = useState<string>("");
-  const evmAccount = useAccount();
+  const evmAccount = useEvmAccount();
+  const cfxAccount = useCfxAccount();
 
+  const sendNfts = async () => {
+    const conflux = new Conflux({
+      url: "https://test.confluxrpc.com",
+      networkId: 1,
+    });
+    const tokenIdsArray = tokenIds.split(",").map(Number);
 
-  const approveNFTs = async () => {
-  }
+    const confluxSideContract = conflux.Contract({
+      abi,
+      address: addresses.ConfluxSide,
+    });
+    const nftContract = conflux.Contract({
+      abi: ERC721Abi,
+      address: nftContractAddress,
+    });
+
+    const alreadyApproved = await nftContract.isApprovedForAll(
+      cfxAccount,
+      addresses.ConfluxSide
+    );
+    if (!alreadyApproved) {
+      const approval = await nftContract.setApprovalForAll(
+        addresses.ConfluxSide,
+        true
+      );
+    }
+
+    const crossToEvm = await confluxSideContract.crossToEvm(
+      nftContractAddress,
+      eSpaceAddress,
+      tokenIdsArray
+    );
+    console.log(crossToEvm);
+  };
 
   return (
     <div className="flex flex-col p-10 rounded-lg shadow-md space-y-2">
       <div className="flex flex-col p-5 border rounded">
         <div className="flex flex-row justify-start">
-          <h2>To: Conflux eSpace</h2>
+          <h2>To: Conflux eSpace Test</h2>
           <button onClick={() => setFlipped(true)}>Switch</button>
         </div>
         <div className="flex flex-row">
@@ -53,16 +90,13 @@ export default function CoreToeSpace({
         <input
           type={"text"}
           value={tokenIds}
-          onChange={(e) =>
-            setTokenIds(e.target.value.replace(/[^0-9,]/g, ""))
-          }
+          onChange={(e) => setTokenIds(e.target.value.replace(/[^0-9,]/g, ""))}
           placeholder="Token Ids"
           className="text-input w-full"
         />
-        <button onClick={approveNFTs}>
-          Approve NFTs
-        </button>
       </div>
+
+      <button onClick={sendNfts}>Send NFTs</button>
     </div>
   );
 }
