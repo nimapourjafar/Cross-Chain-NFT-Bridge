@@ -1,6 +1,7 @@
+// @ts-nocheck
 import { useAccount as useEvmAccount } from "@cfxjs/use-wallet-react/ethereum";
 import React, { useState } from "react";
-import { Conflux } from "js-conflux-sdk";
+import { Conflux, format } from "js-conflux-sdk";
 import { addresses } from "../addresses";
 import { abi } from "../../artifacts/contracts/ConfluxSideERC721.sol/ConfluxSideERC721.json";
 import { abi as ERC721Abi } from "../../artifacts/contracts/UpgradeableERC721.sol/UpgradeableERC721.json";
@@ -33,23 +34,52 @@ export default function CoreToeSpace({
       address: nftContractAddress,
     });
 
-    const alreadyApproved = await nftContract.isApprovedForAll(
-      cfxAccount,
-      addresses.ConfluxSide
-    );
-    if (!alreadyApproved) {
-      const approval = await nftContract.setApprovalForAll(
-        addresses.ConfluxSide,
-        true
+    
+    const sourceTokenMapped = await confluxSideContract.sourceTokens(
+      nftContractAddress
+    )
+    if (
+      sourceTokenMapped !=
+        format.address("0x0000000000000000000000000000000000000000", 1) ||
+      sourceTokenMapped !=
+        format.address("0x0000000000000000000000000000000000000000")
+    ) {
+      const formattedSourceTokenMapped = format.hexAddress(sourceTokenMapped);
+
+      const alreadyApproved = await nftContract.isApprovedForAll(
+        cfxAccount,
+        addresses.ConfluxSide
+      );
+      console.log(alreadyApproved);
+      if (!alreadyApproved) {
+        const approval = await nftContract
+          .setApprovalForAll(addresses.ConfluxSide, true)
+          .sendTransaction({
+            from: cfxAccount,
+          })
+      }
+      const crossTransaction = await confluxSideContract
+        .withdrawToEvm(formattedSourceTokenMapped, eSpaceAddress, tokenIdsArray)
+        .sendTransaction({
+          from: cfxAccount,
+        })
+    } else {
+      const alreadyApproved = await nftContract.isApprovedForAll(
+        cfxAccount,
+        addresses.ConfluxSide
+      );
+      if (!alreadyApproved) {
+        const approval = await nftContract.setApprovalForAll(
+          addresses.ConfluxSide,
+          true
+        );
+      }
+      const crossTransaction = await confluxSideContract.crossToEvm(
+        nftContractAddress,
+        eSpaceAddress,
+        tokenIdsArray
       );
     }
-
-    const crossToEvm = await confluxSideContract.crossToEvm(
-      nftContractAddress,
-      eSpaceAddress,
-      tokenIdsArray
-    );
-    console.log(crossToEvm);
   };
 
   return (
