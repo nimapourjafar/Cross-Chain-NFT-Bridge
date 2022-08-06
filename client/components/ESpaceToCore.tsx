@@ -99,7 +99,7 @@ export default function ESpaceToCore({
     );
 
     const tokenIdsArray = tokenIds.split(",").map(Number);
-    console.log(tokenIdsArray)
+    console.log(tokenIdsArray);
 
     let mappedAddress = "0x0000000000000000000000000000000000000000";
     try {
@@ -107,7 +107,6 @@ export default function ESpaceToCore({
     } catch (e) {
       console.log(e);
     }
-
 
     if (mappedAddress != "0x0000000000000000000000000000000000000000") {
       // nft og from cfx
@@ -121,13 +120,21 @@ export default function ESpaceToCore({
       );
     } else {
       // nft og from evm
-      console.log(cfxAccount)
-      console.log(format.address(nftContractAddress,1),format.address(evmAccount,1),tokenIdsArray)
-      const tx = await confluxSideContract.crossFromEvm(
-        format.address(nftContractAddress,1),
-        format.address(evmAccount,1),
+      console.log(cfxAccount);
+      console.log(
+        format.address(nftContractAddress, 1),
+        format.address(evmAccount, 1),
         tokenIdsArray
       );
+      const tx = await confluxSideContract
+        .crossFromEvm(
+          format.address(nftContractAddress, 1),
+          format.address(evmAccount, 1),
+          tokenIdsArray
+        )
+        .sendTransaction({
+          from: cfxAccount,
+        });
     }
   };
 
