@@ -77,7 +77,7 @@ export default function CoreToeSpace({
       <div className="flex flex-col p-5 border rounded">
         <div className="flex flex-row justify-start">
           <h2>To: Conflux eSpace Test</h2>
-          <button onClick={() => setFlipped(true)}>Switch</button>
+          <button  className="btn-primary" onClick={() => setFlipped(true)}>Switch</button>
         </div>
         <div className="flex flex-row">
           <input
@@ -93,6 +93,7 @@ export default function CoreToeSpace({
                 setESpaceAddress(evmAccount);
               }
             }}
+            className="btn-primary"
           >
             Curr Addr
           </button>
@@ -116,7 +117,7 @@ export default function CoreToeSpace({
         />
       </div>
 
-      <button onClick={sendNfts}>Send NFTs</button>
+      <button className="btn-primary" onClick={sendNfts}>Send NFTs</button>
     </div>
   );
 }

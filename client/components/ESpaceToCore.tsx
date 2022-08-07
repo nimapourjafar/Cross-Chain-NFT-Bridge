@@ -1,8 +1,14 @@
 import {
   useAccount as useCfxAccount,
-  useStatus,
+  useStatus as useCfxStatus,
   connect as connectCfxWallet,
+  useChainId as useCfxChainId,
+  switchChain as switchCfxChain,
 } from "@cfxjs/use-wallet-react/conflux/Fluent";
+import {
+  switchChain as switchEvmChain,
+  useChainId as useEvmChainId,
+} from "@cfxjs/use-wallet-react/ethereum";
 import { useAccount as useEvmAccount } from "@cfxjs/use-wallet-react/ethereum";
 import { ethers } from "ethers";
 import React, { useState } from "react";
@@ -18,7 +24,9 @@ export default function ESpaceToCore({
 }: {
   setFlipped: (flipped: boolean) => void;
 }) {
-  const cfxStatus = useStatus();
+  const cfxStatus = useCfxStatus();
+  const cfxId = useCfxChainId();
+  const evmId = useEvmChainId();
   const [nftContractAddress, setNftContractAddress] = useState("");
   const [tokenIds, setTokenIds] = useState<string>("");
   const cfxAccount = useCfxAccount();
@@ -143,7 +151,9 @@ export default function ESpaceToCore({
       <div className="flex flex-col p-5 border rounded">
         <div className="flex flex-row justify-start">
           <h2>To: Conflux Core</h2>
-          <button onClick={() => setFlipped(false)}>Switch</button>
+          <button onClick={() => setFlipped(false)} className="btn-primary">
+            Switch
+          </button>
         </div>
         {cfxStatus == "active" ? (
           <p> {truncateAddress(cfxAccount || "")}</p>
@@ -160,28 +170,44 @@ export default function ESpaceToCore({
           className="text-input w-full"
         />
       </div>
-      <div className="flex flex-col">
+      {evmId == "71" || evmId == "1030" ? (
         <div className="flex flex-col">
-          <div className="flex flex-row">
-            <p>Step 1</p>
-            <p>Transfer Token</p>
+          <div className="flex flex-col">
+            <div className="flex flex-row">
+              <p>Step 1</p>
+              <p>Transfer Token</p>
+            </div>
+            <p>Transfer NFTs to cross space bridge</p>
           </div>
-          <p>Transfer NFTs to cross space bridge</p>
+          <div className="flex flex-row">
+            <input
+              type={"text"}
+              value={tokenIds}
+              onChange={(e) =>
+                setTokenIds(e.target.value.replace(/[^0-9,]/g, ""))
+              }
+              placeholder="Token Ids"
+              className="text-input w-full"
+            />
+            <button className="btn-primary" onClick={transferTokenToCFXSide}>
+              Transfer
+            </button>
+          </div>
         </div>
-        <div className="flex flex-row">
-          <input
-            type={"text"}
-            value={tokenIds}
-            onChange={(e) =>
-              setTokenIds(e.target.value.replace(/[^0-9,]/g, ""))
-            }
-            placeholder="Token Ids"
-            className="text-input w-full"
-          />
-          <button onClick={transferTokenToCFXSide}>Transfer</button>
-        </div>
+      ) : (
+        <button className="btn-primary" onClick={() => switchEvmChain("0x406")}>Switch to ESpace</button>
+      )}
+      <div>
+        {cfxId == "1029" || cfxId == "1" ? (
+          <button className="btn-primary" onClick={transferFromCfxSideToWallet}>
+            Withdraw
+          </button>
+        ) : (
+          <button className="btn-primary"  onClick={() => switchCfxChain("0x405")}>
+            Switch to Core
+          </button>
+        )}
       </div>
-      <button onClick={transferFromCfxSideToWallet}>Withdraw</button>
     </div>
   );
 }
