@@ -1,11 +1,11 @@
-// @ts-nocheck
-import { useAccount as useEvmAccount } from "@cfxjs/use-wallet/dist/ethereum";
+
+import { useAccount as useEvmAccount } from "@cfxjs/use-wallet-react/ethereum";
 import React, { useState } from "react";
 import { Conflux, format } from "js-conflux-sdk";
 import { addresses } from "../addresses";
 import { abi as CFXSideABI } from "../../artifacts/contracts/ConfluxSideERC721.sol/ConfluxSideERC721.json";
 import { abi as ERC721Abi } from "../../artifacts/contracts/UpgradeableERC721.sol/UpgradeableERC721.json";
-import { useAccount as useCfxAccount } from "@cfxjs/use-wallet";
+import { useAccount as useCfxAccount } from "@cfxjs/use-wallet-react/conflux";
 
 export default function CoreToeSpace({
   setFlipped,
@@ -20,6 +20,7 @@ export default function CoreToeSpace({
 
   const sendNfts = async () => {
     const conflux = new Conflux();
+    // @ts-ignore
     conflux.provider = window.conflux;
     const tokenIdsArray = tokenIds.split(",").map(Number);
 

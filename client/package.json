@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@cfxjs/use-wallet": "^0.0.29",
+    "@cfxjs/use-wallet-react": "^0.0.1-25",
     "@headlessui/react": "^1.6.6",
     "@heroicons/react": "^1.0.6",
     "decimal.js": "^10.3.1",

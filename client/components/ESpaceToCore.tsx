@@ -3,12 +3,12 @@ import {
   connect as connectCfxWallet,
   useChainId as useCfxChainId,
   switchChain as switchCfxChain,
-} from "@cfxjs/use-wallet";
+} from "@cfxjs/use-wallet-react/conflux";
 import {
   switchChain as switchEvmChain,
   useChainId as useEvmChainId,
   useAccount as useEvmAccount,
-} from "@cfxjs/use-wallet/dist/ethereum";
+} from "@cfxjs/use-wallet-react/ethereum";
 import { ethers } from "ethers";
 import React, { useEffect, useState } from "react";
 import { addresses } from "../addresses";

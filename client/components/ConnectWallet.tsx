@@ -4,9 +4,9 @@ import {
   useStatus,
   connect,
   useAccount as useCfxAccount,
-} from "@cfxjs/use-wallet";
+} from "@cfxjs/use-wallet-react/conflux";
 
-import { useAccount as useEvmACcount } from "@cfxjs/use-wallet/dist/ethereum";
+import { useAccount as useEvmACcount } from "@cfxjs/use-wallet-react/ethereum";
 import DropDown from "./DropDown";
 import { truncateAddress } from "../utils/truncateAddress";
 export default function ConnectWallet() {
