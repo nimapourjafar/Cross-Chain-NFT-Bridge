@@ -1,6 +1,5 @@
 import {
   useAccount as useCfxAccount,
-  useStatus as useCfxStatus,
   connect as connectCfxWallet,
   useChainId as useCfxChainId,
   switchChain as switchCfxChain,
@@ -8,10 +7,10 @@ import {
 import {
   switchChain as switchEvmChain,
   useChainId as useEvmChainId,
-  useAccount as useEvmAccount 
+  useAccount as useEvmAccount,
 } from "@cfxjs/use-wallet/dist/ethereum";
 import { ethers } from "ethers";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { addresses } from "../addresses";
 import { abi as EvmABI } from "../../artifacts/contracts/EvmSideERC721.sol/EvmSide.json";
 import { abi as CfxABI } from "../../artifacts/contracts/ConfluxSideERC721.sol/ConfluxSideERC721.json";
@@ -24,15 +23,23 @@ export default function ESpaceToCore({
 }: {
   setFlipped: (flipped: boolean) => void;
 }) {
-  const cfxStatus = useCfxStatus();
   const cfxId = useCfxChainId();
   const evmId = useEvmChainId();
   const [nftContractAddress, setNftContractAddress] = useState("");
   const [tokenIds, setTokenIds] = useState<string>("");
+  const [cfxRenderId, setCfxRenderId] = useState<string|undefined>("");
   const cfxAccount = useCfxAccount();
   const evmAccount = useEvmAccount();
 
+  useEffect(() => {
+    setCfxRenderId(cfxId);
+  },[cfxId]);
+
   const transferTokenToCFXSide = async () => {
+    // check if window is available
+    if (typeof window === "undefined") {
+      return;
+    }
     const conflux = new Conflux();
     // @ts-ignore
     conflux.provider = window.conflux;
@@ -88,6 +95,9 @@ export default function ESpaceToCore({
   };
 
   const transferFromCfxSideToWallet = async () => {
+    if (typeof window === "undefined") {
+      return;
+    }
     const conflux = new Conflux();
     // @ts-ignore
     conflux.provider = window.conflux;
@@ -155,8 +165,8 @@ export default function ESpaceToCore({
             Switch
           </button>
         </div>
-        {cfxStatus == "active" ? (
-          <p> {truncateAddress(cfxAccount || "")}</p>
+        {cfxAccount != undefined ? (
+          <p> {truncateAddress(cfxAccount)}</p>
         ) : (
           <button onClick={connectCfxWallet}>Connect Fluent wallet</button>
         )}
@@ -195,19 +205,20 @@ export default function ESpaceToCore({
           </div>
         </div>
       ) : (
-        <button className="btn-primary" onClick={() => switchEvmChain("0x406")}>Switch to ESpace</button>
+        <button className="btn-primary" onClick={() => switchEvmChain("0x406")}>
+          Switch to ESpace
+        </button>
       )}
-      <div>
-        {cfxId == "1029" || cfxId == "1" ? (
-          <button className="btn-primary" onClick={transferFromCfxSideToWallet}>
-            Withdraw
-          </button>
-        ) : (
-          <button className="btn-primary"  onClick={() => switchCfxChain("0x405")}>
-            Switch to Core
-          </button>
-        )}
-      </div>
+
+      {cfxRenderId == "1029" || cfxRenderId == "1" ? (
+        <button className="btn-primary" onClick={transferFromCfxSideToWallet}>
+          Withdraw
+        </button>
+      ) : (
+        <button className="btn-primary"  onClick={() => switchCfxChain("0x405")}>
+          Switch to Core
+        </button>
+      )}
     </div>
   );
 }
