@@ -1,11 +1,12 @@
 import React from "react";
 import Image from "next/image";
-import { useStatus, connect } from "@cfxjs/use-wallet-react/conflux/Fluent";
 import {
-  requestCrossNetworkPermission,
+  useStatus,
+  connect,
   useAccount as useCfxAccount,
-} from "@cfxjs/use-wallet-react/conflux";
-import { useAccount as useEvmACcount } from "@cfxjs/use-wallet-react/ethereum";
+} from "@cfxjs/use-wallet";
+
+import { useAccount as useEvmACcount } from "@cfxjs/use-wallet/dist/ethereum";
 import DropDown from "./DropDown";
 import { truncateAddress } from "../utils/truncateAddress";
 export default function ConnectWallet() {
@@ -37,7 +38,7 @@ function ConnectWalletBody() {
   const status = useStatus();
   const cfxAccount = useCfxAccount();
   const evmAccount = useEvmACcount();
-  console.log(evmAccount)
+  console.log(evmAccount);
   return (
     <div className="flex flex-col">
       {status == "active" &&
@@ -50,11 +51,7 @@ function ConnectWalletBody() {
       ) : (
         <button
           onClick={() => {
-            if (status == "active") {
-              requestCrossNetworkPermission();
-            } else {
-              connect();
-            }
+            connect();
           }}
         >
           Connect
