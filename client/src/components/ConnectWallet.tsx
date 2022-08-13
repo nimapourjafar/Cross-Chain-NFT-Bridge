@@ -1,5 +1,6 @@
+
+
 import React from "react";
-import Image from "next/image";
 import {
   useStatus,
   connect,
@@ -29,7 +30,6 @@ function ConnectWalletTitle() {
       ) : (
         <div>Connect your wallet</div>
       )}
-      <Image src={"/fluent.png"} width={20} height={20} />
     </div>
   );
 }

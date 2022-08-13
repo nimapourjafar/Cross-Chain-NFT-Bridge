@@ -3,8 +3,7 @@ import { useAccount as useEvmAccount } from "@cfxjs/use-wallet-react/ethereum";
 import React, { useState } from "react";
 import { Conflux, format } from "js-conflux-sdk";
 import { addresses } from "../addresses";
-import { abi as CFXSideABI } from "../../artifacts/contracts/ConfluxSideERC721.sol/ConfluxSideERC721.json";
-import { abi as ERC721Abi } from "../../artifacts/contracts/UpgradeableERC721.sol/UpgradeableERC721.json";
+import { abis } from "../abis";
 import { useAccount as useCfxAccount } from "@cfxjs/use-wallet-react/conflux";
 
 export default function CoreToeSpace({
@@ -25,11 +24,11 @@ export default function CoreToeSpace({
     const tokenIdsArray = tokenIds.split(",").map(Number);
 
     const confluxSideContract = conflux.Contract({
-      abi: CFXSideABI,
+      abi: abis.cfxSide,
       address: addresses.ConfluxSide,
     });
     const nftContract = conflux.Contract({
-      abi: ERC721Abi,
+      abi: abis.erc721,
       address: nftContractAddress,
     });
 
