@@ -1,13 +1,17 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-import "./index.css"
-import ConnectWallet from './components/ConnectWallet';
-import MainCard from './components/MainCard';
+import React from "react";
+import logo from "./logo.svg";
+import "./App.css";
+import "./index.css";
+import ConnectWallet from "./components/ConnectWallet";
+import MainCard from "./components/MainCard";
+import { Helmet } from "react-helmet";
 
 function App() {
   return (
-    <div className='container' >
+    <div className="container">
+      <Helmet>
+        <title>🚄 NFT Shuttle 🚄</title>
+      </Helmet>
 
       <nav className="flex items-center justify-between flex-wrap p-6">
         <div className="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
@@ -26,7 +30,7 @@ function App() {
         </div>
       </main>
     </div>
-  )
+  );
 }
 
 export default App;
