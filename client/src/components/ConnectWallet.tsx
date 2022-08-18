@@ -5,9 +5,9 @@ import {
   useStatus,
   connect,
   useAccount as useCfxAccount,
-} from "@cfxjs/use-wallet-react/conflux";
+} from "@cfxjs/use-wallet-react//conflux/Fluent";
 
-import { useAccount as useEvmACcount , connect as connectEvm} from "@cfxjs/use-wallet-react/ethereum";
+import { useAccount as useEvmACcount , connect as connectEvm} from "@cfxjs/use-wallet-react/ethereum/Fluent";
 import DropDown from "./DropDown";
 import { truncateAddress } from "../utils/truncateAddress";
 export default function ConnectWallet() {
@@ -40,7 +40,7 @@ function ConnectWalletBody() {
   const evmAccount = useEvmACcount();
   console.log(evmAccount);
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col py-4 px-1">
       {status == "active" ? (
         <>
           <div>EVM Address: {truncateAddress(evmAccount||"")}</div>
@@ -52,8 +52,9 @@ function ConnectWalletBody() {
             connect();
             connectEvm();
           }}
+          className="btn-primary"
         >
-          Connect
+          Connect Fluent Wallet
         </button>
       )}
     </div>

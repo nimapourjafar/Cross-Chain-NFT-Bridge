@@ -74,10 +74,10 @@ export default function CoreToeSpace({
 
   return (
     <div className="flex flex-col p-10 rounded-lg shadow-md space-y-2">
-      <div className="flex flex-col p-5 border rounded">
-        <div className="flex flex-row justify-start">
+      <div className="flex flex-col p-5 border rounded space-y-2">
+        <div className="flex flex-row w-full">
           <h2>To: Conflux eSpace Test</h2>
-          <button  className="btn-primary" onClick={() => setFlipped(true)}>Switch</button>
+          <button  className="btn-primary ml-auto" onClick={() => setFlipped(true)}>Switch</button>
         </div>
         <div className="flex flex-row">
           <input
@@ -95,7 +95,7 @@ export default function CoreToeSpace({
             }}
             className="btn-primary"
           >
-            Curr Addr
+            Current Account
           </button>
         </div>
       </div>
