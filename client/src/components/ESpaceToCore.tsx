@@ -17,6 +17,7 @@ import { truncateAddress } from "../utils/truncateAddress";
 import { Conflux, format } from "js-conflux-sdk";
 import { toast } from "react-toastify";
 import { validEvmAddress } from "../utils/validEvmAddress";
+import { getScanUrl } from "../utils/getScanUrl";
 
 export default function ESpaceToCore({
   setFlipped,
@@ -94,6 +95,8 @@ export default function ESpaceToCore({
           format.hexAddress(cfxAccount),
           tokenIdsArray
         );
+        toast.success("Token transfered to CFX side");
+        toast.success(getScanUrl(evmId, tx.hash));
       } catch (e) {
         toast.error("Error locking token");
         console.log(e);
@@ -105,6 +108,8 @@ export default function ESpaceToCore({
           format.hexAddress(cfxAccount),
           tokenIdsArray
         );
+        toast.success("Token transfered to CFX side");
+        toast.success(getScanUrl(evmId, tx.hash));
       } catch (e) {
         toast.error("Error locking token");
         console.log(e);
@@ -162,6 +167,7 @@ export default function ESpaceToCore({
           tokenIdsArray
         );
         toast.success("Transaction completed!");
+        toast.success(getScanUrl(cfxId, tx.transactionHash));
       } catch (e) {
         toast.error("Error withdrawing token");
         console.log(e);
@@ -184,6 +190,8 @@ export default function ESpaceToCore({
           .sendTransaction({
             from: cfxAccount,
           });
+        toast.success("Transaction completed!");
+        toast.success(getScanUrl(cfxId, tx.transactionHash));
       } catch (e) {
         toast.error("Error withdrawing token");
         console.log(e);

@@ -1,10 +1,14 @@
-
 import { useAccount as useEvmAccount } from "@cfxjs/use-wallet-react/ethereum";
 import React, { useState } from "react";
 import { Conflux, format } from "js-conflux-sdk";
 import { addresses } from "../addresses";
 import { abis } from "../abis";
 import { useAccount as useCfxAccount } from "@cfxjs/use-wallet-react/conflux";
+import { validCfxAddress } from "../utils/validCfxAddress";
+import { toast } from "react-toastify";
+import { validEvmAddress } from "../utils/validEvmAddress";
+import { useChainId } from "@cfxjs/use-wallet-react/conflux/Fluent";
+import { getScanUrl } from "../utils/getScanUrl";
 
 export default function CoreToeSpace({
   setFlipped,
@@ -16,8 +20,17 @@ export default function CoreToeSpace({
   const [tokenIds, setTokenIds] = useState<string>("");
   const evmAccount = useEvmAccount();
   const cfxAccount = useCfxAccount();
+  const cfxId = useChainId();
 
   const sendNfts = async () => {
+    if (!validCfxAddress(eSpaceAddress)) {
+      toast.error("Invalid contract address");
+      return;
+    }
+    if (!validEvmAddress(eSpaceAddress)) {
+      toast.error("Invalid recipient address");
+      return;
+    }
     const conflux = new Conflux();
     // @ts-ignore
     conflux.provider = window.conflux;
@@ -32,7 +45,6 @@ export default function CoreToeSpace({
       address: nftContractAddress,
     });
 
-    // breaks here
     const sourceTokenMapped = await confluxSideContract.sourceTokens(
       nftContractAddress
     );
@@ -43,6 +55,7 @@ export default function CoreToeSpace({
     );
 
     if (!alreadyApproved) {
+      toast.info("Approving contract to transfer tokens...");
       const approval = await nftContract
         .setApprovalForAll(addresses.ConfluxSide, true)
         .sendTransaction({
@@ -57,18 +70,35 @@ export default function CoreToeSpace({
         format.address("0x0000000000000000000000000000000000000000")
     ) {
       const formattedSourceTokenMapped = format.hexAddress(sourceTokenMapped);
-
-      const crossTransaction = await confluxSideContract
-        .withdrawToEvm(formattedSourceTokenMapped, eSpaceAddress, tokenIdsArray)
-        .sendTransaction({
-          from: cfxAccount,
-        });
+      try {
+        const crossTransaction = await confluxSideContract
+          .withdrawToEvm(
+            formattedSourceTokenMapped,
+            eSpaceAddress,
+            tokenIdsArray
+          )
+          .sendTransaction({
+            from: cfxAccount,
+          });
+        toast.success("Tokens sent to EVM side");
+        toast.success(getScanUrl(cfxId, crossTransaction.transactionHash));
+      } catch (e) {
+        console.log(e);
+        toast.error("Error sending tokens");
+      }
     } else {
-      const crossTransaction = await confluxSideContract.crossToEvm(
-        nftContractAddress,
-        eSpaceAddress,
-        tokenIdsArray
-      );
+      try {
+        const crossTransaction = await confluxSideContract.crossToEvm(
+          nftContractAddress,
+          eSpaceAddress,
+          tokenIdsArray
+        );
+        toast.success("Tokens sent to EVM side");
+        toast.success(getScanUrl(cfxId, crossTransaction.transactionHash));
+      } catch (e) {
+        console.log(e);
+        toast.error("Error sending tokens");
+      }
     }
   };
 
@@ -77,7 +107,12 @@ export default function CoreToeSpace({
       <div className="flex flex-col p-5 border rounded space-y-2">
         <div className="flex flex-row w-full">
           <h2>To: Conflux eSpace Test</h2>
-          <button  className="btn-primary ml-auto" onClick={() => setFlipped(true)}>Switch</button>
+          <button
+            className="btn-primary ml-auto"
+            onClick={() => setFlipped(true)}
+          >
+            Switch
+          </button>
         </div>
         <div className="flex flex-row">
           <input
@@ -117,7 +152,9 @@ export default function CoreToeSpace({
         />
       </div>
 
-      <button className="btn-primary" onClick={sendNfts}>Send NFTs</button>
+      <button className="btn-primary" onClick={sendNfts}>
+        Send NFTs
+      </button>
     </div>
   );
 }
