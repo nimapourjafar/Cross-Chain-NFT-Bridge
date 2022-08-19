@@ -15,6 +15,7 @@ import { addresses } from "../addresses";
 import { abis } from "../abis";
 import { truncateAddress } from "../utils/truncateAddress";
 import { Conflux, format } from "js-conflux-sdk";
+import { ToastContainer, toast } from "react-toastify";
 
 export default function ESpaceToCore({
   setFlipped,
@@ -34,8 +35,11 @@ export default function ESpaceToCore({
   }, [cfxId]);
 
   const transferTokenToCFXSide = async () => {
+    console.log("calling")
+    toast.info("Transfering token to CFX side...");
     // check if window is available
     if (typeof window === "undefined") {
+      toast.error("window is not available");
       return;
     }
     const conflux = new Conflux();
@@ -70,34 +74,43 @@ export default function ESpaceToCore({
       );
     }
 
-    // check if evm address maps to cfx side address
+    // TODO: check if works
     let mappedAddress = "0x0000000000000000000000000000000000000000";
     try {
       mappedAddress = await evmSideContract.sourceTokens(nftContractAddress);
     } catch (e) {
       console.log(e);
     }
-    console.log("mapped", mappedAddress);
 
     if (mappedAddress != "0x0000000000000000000000000000000000000000") {
-      const tx = await evmSideContract.lockedMappedToken(
-        nftContractAddress,
-        format.hexAddress(cfxAccount),
-        tokenIdsArray
-      );
-      console.log(tx);
+      try {
+        const tx = await evmSideContract.lockedMappedToken(
+          nftContractAddress,
+          format.hexAddress(cfxAccount),
+          tokenIdsArray
+        );
+      } catch (e) {
+        toast.error("Error locking token");
+        console.log(e);
+      }
     } else {
-      const tx = await evmSideContract.lockToken(
-        nftContractAddress,
-        format.hexAddress(cfxAccount),
-        tokenIdsArray
-      );
-      console.log(tx);
+      try {
+        const tx = await evmSideContract.lockToken(
+          nftContractAddress,
+          format.hexAddress(cfxAccount),
+          tokenIdsArray
+        );
+      } catch (e) {
+        toast.error("Error locking token");
+        console.log(e);
+      }
     }
   };
 
   const transferFromCfxSideToWallet = async () => {
+    toast.info("Transfering token to CFX wallet...");
     if (typeof window === "undefined") {
+      toast.error("window is not available");
       return;
     }
     const conflux = new Conflux();
@@ -133,11 +146,16 @@ export default function ESpaceToCore({
       const sourceToken = await evmSideContract.sourceTokens(
         nftContractAddress
       );
-      const tx = await confluxSideContract.withdrawFromEvm(
-        sourceToken,
-        evmAccount,
-        tokenIdsArray
-      );
+      try {
+        const tx = await confluxSideContract.withdrawFromEvm(
+          sourceToken,
+          evmAccount,
+          tokenIdsArray
+        );
+      } catch (e) {
+        toast.error("Error withdrawing token");
+        console.log(e);
+      }
     } else {
       // nft og from evm
       console.log(cfxAccount);
@@ -146,15 +164,20 @@ export default function ESpaceToCore({
         format.address(evmAccount, 1),
         tokenIdsArray
       );
-      const tx = await confluxSideContract
-        .crossFromEvm(
-          format.address(nftContractAddress, 1),
-          format.address(evmAccount, 1),
-          tokenIdsArray
-        )
-        .sendTransaction({
-          from: cfxAccount,
-        });
+      try {
+        const tx = await confluxSideContract
+          .crossFromEvm(
+            format.address(nftContractAddress, 1),
+            format.address(evmAccount, 1),
+            tokenIdsArray
+          )
+          .sendTransaction({
+            from: cfxAccount,
+          });
+      } catch (e) {
+        toast.error("Error withdrawing token");
+        console.log(e);
+      }
     }
   };
 
@@ -214,6 +237,7 @@ export default function ESpaceToCore({
           Switch to Core
         </button>
       )}
+      <ToastContainer />
     </div>
   );
 }
