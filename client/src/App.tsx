@@ -5,6 +5,7 @@ import "./index.css";
 import ConnectWallet from "./components/ConnectWallet";
 import MainCard from "./components/MainCard";
 import { Helmet } from "react-helmet";
+import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
 
@@ -35,6 +36,7 @@ function App() {
           <MainCard />
         </div>
       </main>
+      <ToastContainer />
     </div>
   );
 }

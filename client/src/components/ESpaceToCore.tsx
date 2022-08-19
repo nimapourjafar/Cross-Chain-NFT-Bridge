@@ -15,7 +15,8 @@ import { addresses } from "../addresses";
 import { abis } from "../abis";
 import { truncateAddress } from "../utils/truncateAddress";
 import { Conflux, format } from "js-conflux-sdk";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
+import { validEvmAddress } from "../utils/validEvmAddress";
 
 export default function ESpaceToCore({
   setFlipped,
@@ -35,11 +36,15 @@ export default function ESpaceToCore({
   }, [cfxId]);
 
   const transferTokenToCFXSide = async () => {
-    console.log("calling")
+    console.log("calling");
     toast.info("Transfering token to CFX side...");
     // check if window is available
     if (typeof window === "undefined") {
       toast.error("window is not available");
+      return;
+    }
+    if (!validEvmAddress(nftContractAddress)) {
+      toast.error("Invalid contract address");
       return;
     }
     const conflux = new Conflux();
@@ -113,6 +118,10 @@ export default function ESpaceToCore({
       toast.error("window is not available");
       return;
     }
+    if (!validEvmAddress(nftContractAddress)) {
+      toast.error("Invalid contract address");
+      return;
+    }
     const conflux = new Conflux();
     // @ts-ignore
     conflux.provider = window.conflux;
@@ -152,6 +161,7 @@ export default function ESpaceToCore({
           evmAccount,
           tokenIdsArray
         );
+        toast.success("Transaction completed!");
       } catch (e) {
         toast.error("Error withdrawing token");
         console.log(e);
@@ -223,7 +233,16 @@ export default function ESpaceToCore({
           </button>
         </div>
       ) : (
-        <button className="btn-primary" onClick={() => switchEvmChain("0x406")}>
+        <button
+          className="btn-primary"
+          onClick={() =>
+            switchEvmChain("0x406").catch((e) => {
+              toast.error(
+                "Make sure you've made Fluent have priority connection!"
+              );
+            })
+          }
+        >
           Switch to ESpace
         </button>
       )}
@@ -237,7 +256,6 @@ export default function ESpaceToCore({
           Switch to Core
         </button>
       )}
-      <ToastContainer />
     </div>
   );
 }
